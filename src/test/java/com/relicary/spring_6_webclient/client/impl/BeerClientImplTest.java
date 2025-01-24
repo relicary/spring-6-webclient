@@ -8,6 +8,10 @@ import org.springframework.boot.test.context.SpringBootTest;
 import reactor.core.publisher.Flux;
 import reactor.test.StepVerifier;
 
+import java.util.concurrent.atomic.AtomicBoolean;
+
+import static org.awaitility.Awaitility.await;
+
 @SpringBootTest
 @Slf4j
 class BeerClientImplTest {
@@ -20,9 +24,23 @@ class BeerClientImplTest {
 
         Flux<String> beerFlux = client.listBeer();
 
-        StepVerifier.create(beerFlux.doOnNext(log::info))
+        StepVerifier
+                .create(
+                        beerFlux.doOnNext(log::info)
+                )
                 .expectNextMatches(beer -> beer != null && !beer.isEmpty())
                 .verifyComplete();
     }
 
+    @Test
+    void testGetMap() {
+        AtomicBoolean atomicBoolean = new AtomicBoolean(false);
+
+        client.listBeerMap().subscribe(beer -> {
+            log.info(">>> {}",beer);
+            atomicBoolean.set(true);
+        });
+
+        await().untilTrue(atomicBoolean);
+    }
 }
