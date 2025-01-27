@@ -1,5 +1,6 @@
 package com.relicary.spring_6_webclient.client.impl;
 
+import com.fasterxml.jackson.databind.JsonNode;
 import com.relicary.spring_6_webclient.client.BeerClient;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.ParameterizedTypeReference;
@@ -38,5 +39,14 @@ public class BeerClientImpl implements BeerClient {
                 .uri(BEER_PATH)
                 .retrieve()
                 .bodyToFlux(new ParameterizedTypeReference<Map<String, String>>() {});
+    }
+
+    @Override
+    public Flux<JsonNode> listBeersJsonNode() {
+        return webClient.get()
+                .uri(BEER_PATH)
+                .retrieve()
+                .bodyToFlux(JsonNode.class);
+
     }
 }
