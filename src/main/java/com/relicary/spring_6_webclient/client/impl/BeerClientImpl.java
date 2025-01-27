@@ -18,12 +18,9 @@ public class BeerClientImpl implements BeerClient {
     private final WebClient webClient;
 
     public BeerClientImpl(
-            WebClient.Builder webClientBuilder,
-            @Value("${beer.service.url}") String baseUrl) {
+            WebClient.Builder webClientBuilder) {
 
-        this.webClient = webClientBuilder
-                .baseUrl(baseUrl)
-                .build();
+        this.webClient = webClientBuilder.build();
     }
 
     @Override
