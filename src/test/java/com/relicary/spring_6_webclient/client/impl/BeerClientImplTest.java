@@ -2,8 +2,12 @@ package com.relicary.spring_6_webclient.client.impl;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.relicary.spring_6_webclient.client.BeerClient;
+import com.relicary.spring_6_webclient.model.BeerDTO;
 import lombok.extern.slf4j.Slf4j;
+import org.junit.jupiter.api.MethodOrderer;
+import org.junit.jupiter.api.Order;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.TestMethodOrder;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import reactor.core.publisher.Flux;
@@ -15,6 +19,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import static org.awaitility.Awaitility.await;
 
 @SpringBootTest
+@TestMethodOrder(MethodOrderer.OrderAnnotation.class)
 @Slf4j
 class BeerClientImplTest {
 
@@ -25,6 +30,7 @@ class BeerClientImplTest {
     BeerClient client;
 
     @Test
+    @Order(1)
     void testListBeerString_withStepVerifier() {
 
         Flux<String> listBeer = client.listBeer();
@@ -38,6 +44,7 @@ class BeerClientImplTest {
     }
 
     @Test
+    @Order(5)
     void testListBeerString_withAwait() {
 
         AtomicBoolean atomicBoolean = new AtomicBoolean(false);
@@ -53,6 +60,7 @@ class BeerClientImplTest {
     }
 
     @Test
+    @Order(2)
     void testListBeerMap_withStepVerifier() {
         Flux<Map<String, String>> listBeerMap = client.listBeerMap();
 
@@ -68,6 +76,7 @@ class BeerClientImplTest {
     }
 
     @Test
+    @Order(6)
     void testListBeerMap_withAwait() {
         AtomicBoolean atomicBoolean = new AtomicBoolean(false);
 
@@ -81,6 +90,7 @@ class BeerClientImplTest {
     }
 
     @Test
+    @Order(3)
     void testListBeerJson_withStepVerifier() {
         Flux<JsonNode> beerFlux = client.listBeersJsonNode();
 
@@ -94,6 +104,7 @@ class BeerClientImplTest {
                 .verifyComplete();
     }
 
+    @Order(7)
     @Test
     void testListBeerJson_withAwait() {
 
@@ -104,6 +115,37 @@ class BeerClientImplTest {
                     log.info(jsonNode.toPrettyString());
                     atomicBoolean.set(true);
                 });
+
+        await().untilTrue(atomicBoolean);
+    }
+
+    @Test
+    @Order(4)
+    void testListBeerDto_withStepVerifier() {
+        Flux<BeerDTO> beerFlux = client.listBeersDto();
+
+        StepVerifier
+                .create(
+                        beerFlux.doOnNext(beer ->
+                                log.info(beer.toString())
+                        )
+                )
+                .thenConsumeWhile(beer -> beer != null && beer.getId() != null && beer.getBeerName() != null)
+                .verifyComplete();
+    }
+
+    @Test
+    @Order(8)
+    void testListBeerDto_withAwait() {
+
+        AtomicBoolean atomicBoolean = new AtomicBoolean(false);
+
+        client.listBeersDto().subscribe(
+                dto -> {
+                    log.info(dto.toString());
+                    atomicBoolean.set(true);
+                }
+        );
 
         await().untilTrue(atomicBoolean);
     }

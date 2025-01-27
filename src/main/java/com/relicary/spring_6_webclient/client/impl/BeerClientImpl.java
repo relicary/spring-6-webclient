@@ -2,6 +2,7 @@ package com.relicary.spring_6_webclient.client.impl;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.relicary.spring_6_webclient.client.BeerClient;
+import com.relicary.spring_6_webclient.model.BeerDTO;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.stereotype.Service;
@@ -48,5 +49,13 @@ public class BeerClientImpl implements BeerClient {
                 .retrieve()
                 .bodyToFlux(JsonNode.class);
 
+    }
+
+    @Override
+    public Flux<BeerDTO> listBeersDto() {
+        return webClient.get()
+                .uri(BEER_PATH)
+                .retrieve()
+                .bodyToFlux(BeerDTO.class);
     }
 }
