@@ -13,6 +13,7 @@ import org.springframework.boot.test.context.SpringBootTest;
 import reactor.core.publisher.Flux;
 import reactor.test.StepVerifier;
 
+import java.math.BigDecimal;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicBoolean;
 
@@ -44,7 +45,7 @@ class BeerClientImplTest {
     }
 
     @Test
-    @Order(50)
+    @Order(51)
     void testListBeerString_withAwait() {
 
         AtomicBoolean atomicBoolean = new AtomicBoolean(false);
@@ -76,7 +77,7 @@ class BeerClientImplTest {
     }
 
     @Test
-    @Order(51)
+    @Order(52)
     void testListBeerMap_withAwait() {
         AtomicBoolean atomicBoolean = new AtomicBoolean(false);
 
@@ -104,7 +105,7 @@ class BeerClientImplTest {
                 .verifyComplete();
     }
 
-    @Order(52)
+    @Order(53)
     @Test
     void testListBeerJson_withAwait() {
 
@@ -135,7 +136,7 @@ class BeerClientImplTest {
     }
 
     @Test
-    @Order(53)
+    @Order(54)
     void testListBeerDto_withAwait() {
 
         AtomicBoolean atomicBoolean = new AtomicBoolean(false);
@@ -168,7 +169,7 @@ class BeerClientImplTest {
     }
 
     @Test
-    @Order(54)
+    @Order(55)
     void testGetBeerById_withAwait() {
         AtomicBoolean atomicBoolean = new AtomicBoolean(false);
 
@@ -202,7 +203,7 @@ class BeerClientImplTest {
     }
 
     @Test
-    @Order(55)
+    @Order(56)
     void testGetBeerByBeerStyle_withAwait() {
         AtomicBoolean atomicBoolean = new AtomicBoolean(false);
 
@@ -214,4 +215,47 @@ class BeerClientImplTest {
         );
         await().untilTrue(atomicBoolean);
     }
+
+    @Test
+    @Order(7)
+    void testCreateBeer_withStepVerifier() {
+        BeerDTO newDto = BeerDTO.builder()
+                .price(new BigDecimal("10.99"))
+                .beerName("Mango Bobs")
+                .beerStyle("IPA")
+                .quantityOnHand(500)
+                .upc("123245")
+                .build();
+
+        StepVerifier.create(client.createBeer(newDto).doOnNext(
+                dto -> log.info(dto.getId())
+                ))
+                .expectNextMatches(dto ->
+                        dto.getId() != null && "Mango Bobs".equals(dto.getBeerName())
+                )
+                .verifyComplete();
+    }
+
+    @Test
+    @Order(57)
+    void testCreateBeer_withAwait() {
+        AtomicBoolean atomicBoolean = new AtomicBoolean(false);
+
+        BeerDTO newDto = BeerDTO.builder()
+                .price(new BigDecimal("10.99"))
+                .beerName("Mango Bobs")
+                .beerStyle("IPA")
+                .quantityOnHand(500)
+                .upc("123245")
+                .build();
+
+        client.createBeer(newDto)
+                .subscribe(dto -> {
+                    log.info(dto.getId());
+                    atomicBoolean.set(true);
+                });
+
+        await().untilTrue(atomicBoolean);
+    }
+    
 }

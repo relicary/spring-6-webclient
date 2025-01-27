@@ -5,12 +5,14 @@ import com.relicary.spring_6_webclient.client.BeerClient;
 import com.relicary.spring_6_webclient.model.BeerDTO;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.ParameterizedTypeReference;
+import org.springframework.http.HttpHeaders;
 import org.springframework.stereotype.Service;
 import org.springframework.web.reactive.function.client.WebClient;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
 import java.util.Map;
+import java.util.Objects;
 
 @Service
 public class BeerClientImpl implements BeerClient {
@@ -78,5 +80,25 @@ public class BeerClientImpl implements BeerClient {
                 )
                 .retrieve()
                 .bodyToFlux(BeerDTO.class);
+    }
+
+    @Override
+    public Mono<BeerDTO> createBeer(BeerDTO beerDTO) {
+        return webClient.post()
+                .uri(BEER_PATH)
+                .body(Mono.just(beerDTO), BeerDTO.class)
+
+                .retrieve()
+
+                .toBodilessEntity()
+                .flatMap(response ->
+                        Mono.just(
+                                Objects.requireNonNull(
+                                        response.getHeaders().get(HttpHeaders.LOCATION)
+                                ).get(0)
+                        )
+                )
+                .map(location -> location.split("/")[location.split("/").length - 1])
+                .flatMap(this::getBeerById);
     }
 }
