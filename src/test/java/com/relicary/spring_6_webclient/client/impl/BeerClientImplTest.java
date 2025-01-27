@@ -44,7 +44,7 @@ class BeerClientImplTest {
     }
 
     @Test
-    @Order(5)
+    @Order(50)
     void testListBeerString_withAwait() {
 
         AtomicBoolean atomicBoolean = new AtomicBoolean(false);
@@ -76,7 +76,7 @@ class BeerClientImplTest {
     }
 
     @Test
-    @Order(6)
+    @Order(51)
     void testListBeerMap_withAwait() {
         AtomicBoolean atomicBoolean = new AtomicBoolean(false);
 
@@ -104,7 +104,7 @@ class BeerClientImplTest {
                 .verifyComplete();
     }
 
-    @Order(7)
+    @Order(52)
     @Test
     void testListBeerJson_withAwait() {
 
@@ -135,7 +135,7 @@ class BeerClientImplTest {
     }
 
     @Test
-    @Order(8)
+    @Order(53)
     void testListBeerDto_withAwait() {
 
         AtomicBoolean atomicBoolean = new AtomicBoolean(false);
@@ -146,6 +146,38 @@ class BeerClientImplTest {
                     atomicBoolean.set(true);
                 }
         );
+
+        await().untilTrue(atomicBoolean);
+    }
+
+    @Test
+    @Order(5)
+    void testGetBeerById_withStepVerifier() {
+
+        Flux<BeerDTO> beerFlux = client.listBeersDto();
+
+        StepVerifier
+                .create(beerFlux.flatMap(
+                        beerDTO -> client.getBeerById(beerDTO.getId())
+                ))
+                .expectNextMatches(beer -> beer.getId() != null && beer.getBeerName() != null)
+                .thenConsumeWhile(beer -> beer.getId() != null && beer.getBeerName() != null)
+                .verifyComplete();
+
+
+    }
+
+    @Test
+    @Order(54)
+    void testGetBeerById_withAwait() {
+        AtomicBoolean atomicBoolean = new AtomicBoolean(false);
+
+        client.listBeersDto()
+                .flatMap(beerDto -> client.getBeerById(beerDto.getId()))
+                .subscribe(beer -> {
+                    log.info(beer.getBeerName());
+                    atomicBoolean.set(true);
+                });
 
         await().untilTrue(atomicBoolean);
     }
