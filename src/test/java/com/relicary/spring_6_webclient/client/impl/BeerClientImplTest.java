@@ -181,4 +181,37 @@ class BeerClientImplTest {
 
         await().untilTrue(atomicBoolean);
     }
+
+    @Test
+    @Order(6)
+    void testGetBeerByBeerStyle_withStepVerifier() {
+
+        Flux<BeerDTO> beerFlux = client.getBeerByBeerStyle("Pale Ale");
+
+        StepVerifier
+                .create(beerFlux.doOnNext(beerDTO -> log.info(beerDTO.getId())))
+                .expectNextMatches(
+                        beer -> beer.getId() != null &&
+                                beer.getBeerName() != null &&
+                                "Pale Ale".equals(beer.getBeerStyle())
+                )
+                .thenConsumeWhile(beer -> beer.getId() != null && beer.getBeerName() != null)
+                .verifyComplete();
+
+
+    }
+
+    @Test
+    @Order(55)
+    void testGetBeerByBeerStyle_withAwait() {
+        AtomicBoolean atomicBoolean = new AtomicBoolean(false);
+
+        client.getBeerByBeerStyle("Pale Ale").subscribe(
+                dto -> {
+                    log.info(dto.getBeerStyle());
+                    atomicBoolean.set(true);
+                }
+        );
+        await().untilTrue(atomicBoolean);
+    }
 }
